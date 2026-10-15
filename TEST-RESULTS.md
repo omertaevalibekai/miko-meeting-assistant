@@ -1,44 +1,51 @@
-# Проверка прототипа Мико 0.3
+# Miko 0.4.0 verification
 
-Дата: 15 октября 2026 года. API и интерфейс проверены для версии 0.3; аудиодвижок также проверялся 14 октября.
+Date: October 15, 2026. The English build was compiled and checked locally on Windows x64. No personal microphone capture or real OpenAI API request was made.
 
-| Проверка | Результат |
+## Re-run for v0.4.0
+
+| Check | Result |
 |---|---|
-| Сборка .NET Framework / WPF x64 | Успешно |
-| Единственная кнопка на маскоте | «⋯»; старых кнопок, двойного щелчка для запуска окна и контекстного меню нет |
-| Прикреплённая панель | Открывается через «⋯», закреплена за виджетом |
-| Все четыре вкладки | Контент видим; обычное окно не открывается |
-| Настройки | Только этот пункт показывает обычное окно |
-| Пять персонажей | Переключаются; изображения всех пяти различаются |
-| Анимация | Кадры моргания/покачивания меняются; при отключении остаются одинаковыми |
-| Сохранение облика | Индекс персонажа и настройка анимации проходят сериализацию и восстановление |
-| Настройки версии 0.1 | Загружаются с Мико и включённой по умолчанию анимацией |
-| Переключение очного и онлайн-режима | Режим меняется в прикреплённой панели |
-| Пустая история | Недоступные действия выключены |
-| Перечисление устройств | Найдены микрофон и динамики Realtek |
-| Сведение разных частот и числа каналов | 48 кГц stereo + 44,1 кГц mono → 16 кГц mono PCM16 |
-| Дорожки разной длины | Конец длинной дорожки сохранён |
-| Тишина в начале и конце | Временные интервалы сохранены |
-| Заметки и метаданные | UTF-8, атомарная замена файлов |
-| Итог | Фразы с задачами и пользовательские заметки сохраняются |
-| Реальная локальная расшифровка | Публичный образец JFK успешно распознан; TXT, SRT, Markdown созданы |
-| Тишина / детектор речи | Пустой текст, без выдуманной речи; старый результат заменяется |
-| Отмена | Аудио остаётся, статус допускает повторную обработку |
-| Русский путь пользователя и пробелы в пути | Обработка прошла |
-| SHA-256 модели Whisper | Совпадает с метаданными LFS исходного файла |
+| .NET Framework / WPF x64 compilation | Passed |
+| English window title, recording action and tab labels | Passed |
+| Default language auto-detection | Passed |
+| Legacy Russian spoken-language preference retained | Passed |
+| Exactly one mascot action: ⋯ | Passed |
+| Attached popup, four tabs, Settings as the only normal window | Passed |
+| Five selectable, visually distinct mascots | Passed |
+| Animated frames differ; disabled animation stays still | Passed |
+| Appearance settings serialization and legacy settings | Passed |
+| In-person / online mode switching | Passed |
+| Different input sample rates and channel counts mixed to mono 16 kHz PCM16 | Passed |
+| Unequal track lengths and silent time intervals retained | Passed |
+| UTF-8 metadata, atomic writes, summary actions and notes | Passed |
+| English empty-transcript summary | Passed |
+| Masked API-key input and API/local provider selection | Passed |
+| DPAPI test-key encryption and read-back | Passed |
+| Multipart API request: Bearer auth, WAV, whisper-1, verbose_json, segment timestamps | Passed with fake HTTP handler |
+| Auto language omits API language field | Passed |
+| 25.6 MB audio split below upload limit; concatenated PCM SHA-256 matches original | Passed |
+| Chunk timestamp offsets and TXT/SRT/summary/model metadata | Passed |
+| 401, 429, network failure, timeout, malformed response and later-chunk failure | Audio and previous transcript retained |
+| No automatic paid retries or raw server error/key leakage | Passed |
+| Cancellation and missing key | Audio retained; missing key sends no request |
+| English screenshots and both 60-frame animations | Rendered and screenshots visually inspected |
 
-Микрофон пользователя не включался. Живой звонок в Google Meet, Zoom или Teams не проводился. Точность русского и казахского распознавания на реальной встрече отдельно не измерялась. Для итогов используется извлечение ключевых фраз, а не генеративная модель.
+Reports: [API](preview/api-results.txt), [UI](preview/ui-results.txt). Source contains the assertions under `--self-test`, `--api-tests` and `--ui-test`.
 
-Команды воспроизведения проверок реализованы в исходниках: `--api-tests`, `--self-test`, `--ui-test`, `--transcribe-test`, `--processing-tests`. Они принимают папку для результатов; тест расшифровки также принимает путь к публичному JFK WAV из whisper.cpp. `--devices` только перечисляет устройства, `--render` сохраняет изображения собственных элементов интерфейса, `--animation-preview` создаёт 60 кадров пяти персонажей. Эти команды не запускают захват микрофона. UI-тест использует отдельные тестовые настройки и не читает содержимое пользовательских встреч.
-## OpenAI API в версии 0.3
+## Earlier engine validation
 
-- По умолчанию whisper-1; ключ вводится в маскированное поле настроек. Локальный вариант выбирается там же.
-- Проверен multipart POST с Bearer, WAV, verbose_json и segment; при языке auto параметр language отсутствует.
-- Запись 25,6 МБ разделена на WAV-части меньше 25 МБ. SHA-256 объединённых PCM-данных совпадает с оригиналом; таймкоды учитывают смещение частей.
-- Имитация успешного ответа создаёт TXT, SRT, локальный итог и статус ready.
-- Ошибки 401/429, сети, таймаут, неправильный ответ и сбой следующей части сохраняют аудио и предыдущий текст. Автоматических повторов нет; ключ и текст серверной ошибки не попадают в журнал.
-- Отмена оставляет аудио. Без ключа итоговый WAV создаётся, запрос не выполняется.
-- Тестовый ключ зашифрован DPAPI и успешно прочитан обратно; открытого ключа в файле нет.
-- После изменений успешно выполнено локальное распознавание публичного JFK WAV.
+On October 14–15, the same audio/Whisper engine used in v0.3 was checked with the public JFK WAV sample: local recognition produced TXT, SRT and Markdown. Silence with VAD produced no invented speech; cancellation preserved audio. Unicode Windows paths and spaces worked. The model SHA-256 matched upstream LFS metadata. These local-inference checks were not repeated for the English release.
 
-Полный журнал: `preview/api-results.txt`. Реальные запросы в OpenAI и проверка аккаунта не выполнялись: пользовательский ключ не вводился. Применялся подменный HTTP-обработчик, проверяющий запросы и возвращающий заданные ответы. Пользовательские записи не отправлялись.
+To reproduce with local dependencies installed:
+
+```powershell
+Start-Process .\Miko.exe -ArgumentList '--transcribe-test "path\to\jfk.wav" work\local-test' -WindowStyle Hidden -Wait
+Start-Process .\Miko.exe -ArgumentList '--processing-tests work\processing-tests' -WindowStyle Hidden -Wait
+```
+
+`--devices` only lists devices. `--render`, `--animation-preview` and `--state-preview` render the app's own elements with isolated demo settings. The state animation uses a simulated level; it is not footage of a live recording. These commands do not start microphone capture or load personal meeting content.
+
+## Limits of validation
+
+Live OpenAI authentication and billing were not tested. No live Google Meet, Zoom or Teams call was recorded. Russian and Kazakh accuracy on real meetings was not measured. Summaries extract original sentences locally; they are not generated by an LLM. Windows/device errors supplied by the operating system may still appear in the system language, and existing meeting content is not translated.

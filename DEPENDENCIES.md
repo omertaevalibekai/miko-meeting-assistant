@@ -1,6 +1,6 @@
 # Dependencies
 
-Downloaded 2026-10-14 from upstream distributors. Version 0.3 uses OpenAI whisper-1 API by default; audio is uploaded for cloud transcription after recording or manual reprocessing. The optional local mode uses the bundled dependencies below without uploading audio.
+Downloaded 2026-10-14 from upstream distributors. Version 0.4.0 uses OpenAI whisper-1 API by default; audio is uploaded for cloud transcription after recording or manual reprocessing. The optional local mode uses the bundled dependencies below without uploading audio. The English release retains the same pinned engine and models.
 
 | Component | Version | Source |
 |---|---|---|
