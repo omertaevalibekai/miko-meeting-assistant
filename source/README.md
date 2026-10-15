@@ -1,3 +1,3 @@
-# Исходники Мико
+# Miko source
 
-WPF-интерфейс, маскоты, запись WASAPI, Whisper API и проверки. Инструкция сборки: ../BUILDING.md.
+C# / WPF application, five pixel mascots, WASAPI recording, OpenAI Whisper integration, local processing and test harnesses. See [build instructions](../BUILDING.md) and [verification results](../TEST-RESULTS.md).

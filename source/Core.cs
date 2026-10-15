@@ -29,11 +29,11 @@ namespace MeetingSprite {
         [ScriptIgnore] public string Caption { get { return Title + "\n" + Started + "  ·  " + StatusLabel; } }
         [ScriptIgnore] public string StatusLabel { get {
             switch (Status) {
-                case "ready": return "Готово";
-                case "recording": return "Запись прервана";
-                case "processing": return "Обработка прервана";
-                case "failed": return "Нужна повторная обработка";
-                default: return "Аудио сохранено";
+                case "ready": return "Done";
+                case "recording": return "Recording interrupted";
+                case "processing": return "Processing interrupted";
+                case "failed": return "Needs reprocessing";
+                default: return "Audio saved";
             }
         } }
     }
@@ -72,11 +72,11 @@ namespace MeetingSprite {
         }
         public static Settings LoadSettings() {
             try { return new JavaScriptSerializer().Deserialize<Settings>(File.ReadAllText(Path.Combine(Root,"settings.json"))); }
-            catch { return new Settings { Language="ru", Left=-1, Top=-1 }; }
+            catch { return new Settings { Language="auto", Left=-1, Top=-1 }; }
         }
         public static void SaveSettings(Settings s) { Write(Path.Combine(Root,"settings.json"),new JavaScriptSerializer().Serialize(s)); }
         public static Meeting Create(string title, bool online, string lang, string mic, string output) {
-            var m = new Meeting { Title=String.IsNullOrWhiteSpace(title) ? "Встреча" : title.Trim(),
+            var m = new Meeting { Title=String.IsNullOrWhiteSpace(title) ? "Meeting" : title.Trim(),
                 Started=DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm zzz"), Mode=online ? "online" : "room",
                 Language=lang, Microphone=mic, Output=output, Status="recording",
                 Folder=Path.Combine(Meetings,DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")+"_"+Guid.NewGuid().ToString("N").Substring(0,6)) };
@@ -94,7 +94,7 @@ namespace MeetingSprite {
                 string defaultId = null;
                 try { using (var d = e.GetDefaultAudioEndpoint(flow, Role.Multimedia)) defaultId=d.ID; } catch { }
                 foreach (var d in e.EnumerateAudioEndPoints(flow,DeviceState.Active)) {
-                    result.Add(new DeviceChoice { Id=d.ID, Name=d.FriendlyName+(d.ID==defaultId ? " (по умолчанию)" : "") }); d.Dispose();
+                    result.Add(new DeviceChoice { Id=d.ID, Name=d.FriendlyName+(d.ID==defaultId ? " (default)" : "") }); d.Dispose();
                 }
                 result=result.OrderByDescending(d=>d.Id==defaultId).ToList();
             }
@@ -168,7 +168,7 @@ namespace MeetingSprite {
         void Add(WasapiCapture c,string file) {
             captures.Add(c); var track=new TimedTrack(file,c.WaveFormat,clock); tracks.Add(track);
             c.DataAvailable+=track.Receive;
-            c.RecordingStopped+=(s,e)=>{ if(!stopping) Fault=e.Exception==null ? "Устройство прекратило запись." : e.Exception.Message; };
+            c.RecordingStopped+=(s,e)=>{ if(!stopping) Fault=e.Exception==null ? "The audio device stopped recording." : e.Exception.Message; };
         }
         public double Stop() {
             stopping=true;
@@ -231,13 +231,13 @@ namespace MeetingSprite {
                 .OrderByDescending(x=>x.Score).Take(5).OrderBy(x=>x.Index).Select(x=>x.Text).ToList();
             var todo=lines.Where(s=>actions.IsMatch(s)).Take(8).ToList();
             var result=new StringBuilder("# "+title+"\n\n");
-            result.Append("Локальный краткий итог: ключевые фразы выбраны из расшифровки автоматически. Проверьте формулировки, имена и сроки.\n\n## Основное\n\n");
-            if(ranked.Count==0)result.Append("Разборчивая речь не обнаружена. Проверьте аудиозапись.\n");
+            result.Append("Local summary: key sentences are selected automatically from the transcript. Check the wording, names and deadlines.\n\n## Highlights\n\n");
+            if(ranked.Count==0)result.Append("No clear speech detected. Check the audio recording.\n");
             foreach(var s in ranked)result.Append("- "+s+"\n");
-            result.Append("\n## Возможные договорённости и следующие шаги\n\n");
-            if(todo.Count==0)result.Append("Явные формулировки не найдены.\n");
+            result.Append("\n## Possible decisions and next steps\n\n");
+            if(todo.Count==0)result.Append("No explicit action statements found.\n");
             foreach(var s in todo)result.Append("- "+s+"\n");
-            if(!String.IsNullOrWhiteSpace(notes))result.Append("\n## Ваши заметки\n\n"+notes.Trim()+"\n");
+            if(!String.IsNullOrWhiteSpace(notes))result.Append("\n## Your notes\n\n"+notes.Trim()+"\n");
             return result.ToString();
         }
     }
@@ -252,12 +252,12 @@ namespace MeetingSprite {
         public static async Task Run(Meeting m,Action<string> progress,CancellationToken token,string provider="openai",string apiKey=null,System.Net.Http.HttpClient apiClient=null) {
             m.Status="processing";m.Error=null;Store.Save(m);
             try {
-                progress("Собираю аудио…");
+                progress("Preparing audio…");
                 string audio=Path.Combine(m.Folder,"audio.wav");
                 if(File.Exists(Path.Combine(m.Folder,"microphone.wav"))) {
                     await Task.Run(()=>AudioMix.Mix(Path.Combine(m.Folder,"microphone.wav"),Path.Combine(m.Folder,"computer.wav"),audio));
                 }
-                if(!File.Exists(audio))throw new IOException("Аудиозапись не найдена.");
+                if(!File.Exists(audio))throw new IOException("Audio recording not found.");
                 token.ThrowIfCancellationRequested();
                 string prefix=Path.Combine(m.Folder,"transcript-pending");
                 foreach(string extension in new[]{".txt",".srt"})if(File.Exists(prefix+extension))File.Delete(prefix+extension);
@@ -271,8 +271,8 @@ namespace MeetingSprite {
                         Store.Write(Path.Combine(m.Folder,"recognition.log"),"Provider: OpenAI API\nModel: whisper-1\nResult: complete\n");
                     }finally{if(apiClient==null)client.Dispose();}
                 } else {
-                if(!Available)throw new IOException("Нет локального движка или модели. Восстановите папки engine и models из дистрибутива.");
-                progress("Распознаю речь на компьютере…");
+                if(!Available)throw new IOException("Local engine or model missing. Restore the engine and models folders from the release archive.");
+                progress("Transcribing on your computer…");
                 // Local mode invokes the bundled engine without a shell.
                 var start=new ProcessStartInfo(Path.Combine(Store.Root,"engine","whisper-cli.exe")) {
                     Arguments="-m "+Quote("models/ggml-base.bin")+" -f "+Quote(Relative(audio))+" -of "+Quote(Relative(prefix))+
@@ -289,11 +289,11 @@ namespace MeetingSprite {
                     string log=await stderr; string outLog=await stdout;
                     Store.Write(Path.Combine(m.Folder,"recognition.log"),log+"\n"+outLog);
                     token.ThrowIfCancellationRequested();
-                    if(p.ExitCode!=0 || !File.Exists(prefix+".txt"))throw new IOException("Распознавание не завершилось. Подробности в recognition.log. Аудио сохранено.");
+                    if(p.ExitCode!=0 || !File.Exists(prefix+".txt"))throw new IOException("Transcription did not finish. See recognition.log for details. Your audio is saved.");
                 }
                 }
                 token.ThrowIfCancellationRequested();
-                progress("Готовлю краткий итог…");
+                progress("Preparing summary…");
                 string transcript=File.ReadAllText(prefix+".txt",Store.Utf8);
                 Store.Write(Path.Combine(m.Folder,"transcript.txt"),transcript);
                 if(File.Exists(prefix+".srt"))Store.Write(Path.Combine(m.Folder,"transcript.srt"),File.ReadAllText(prefix+".srt",Store.Utf8));
@@ -302,8 +302,8 @@ namespace MeetingSprite {
                 Store.Write(Path.Combine(m.Folder,"summary.md"),Summarizer.Build(m.Title,transcript,notes));
                 foreach(string extension in new[]{".txt",".srt"})if(File.Exists(prefix+extension))File.Delete(prefix+extension);
                 m.TranscriptionModel=provider=="local"?"Whisper base (local)":"whisper-1 (OpenAI API)";
-                m.Status="ready";m.Error=null;Store.Save(m); progress("Встреча готова");
-            } catch(OperationCanceledException) { m.Status="saved";m.Error="Обработка отменена. Можно запустить её снова.";Store.Save(m);throw; }
+                m.Status="ready";m.Error=null;Store.Save(m); progress("Meeting ready");
+            } catch(OperationCanceledException) { m.Status="saved";m.Error="Processing cancelled. You can run it again.";Store.Save(m);throw; }
             catch(Exception e) {m.Status="failed";m.Error=e.Message;Store.Save(m);throw;}
         }
     }

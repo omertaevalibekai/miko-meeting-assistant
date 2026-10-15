@@ -46,7 +46,7 @@ namespace MeetingSprite {
                 Assert(summary.Contains("Анна подготовит макет к пятнице."),"Action missing");
                 Assert(summary.Contains("Проверить ссылки"),"Notes missing");
                 Assert(!summary.Contains("Иван"),"Fabricated person");
-                Assert(Summarizer.Build("Тишина","","").Contains("не обнаружена"),"Empty transcript");
+                Assert(Summarizer.Build("Silence","","").Contains("No clear speech detected"),"Empty transcript");
                 Store.Write(Path.Combine(folder,"summary-test.md"),summary);
                 log.AppendLine("PASS: extractive summary retains original action phrases and notes; empty speech is explicit.");
                 var m=new Meeting {Folder=folder,Title="Русский путь и название",Status="saved",Seconds=1.5};Store.Save(m);

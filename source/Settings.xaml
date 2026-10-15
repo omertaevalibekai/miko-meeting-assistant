@@ -1,22 +1,22 @@
-<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Мико — настройки" Width="550" Height="760" MinWidth="480" MinHeight="500" WindowStartupLocation="CenterScreen" Background="#F4F4FA" Foreground="#242532" FontFamily="Segoe UI" FontSize="14">
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Miko — Settings" Width="550" Height="760" MinWidth="480" MinHeight="500" WindowStartupLocation="CenterScreen" Background="#F4F4FA" Foreground="#242532" FontFamily="Segoe UI" FontSize="14">
  <Window.Resources><Style TargetType="ComboBox"><Setter Property="MinHeight" Value="36"/><Setter Property="Padding" Value="8,6"/></Style><Style TargetType="Button"><Setter Property="Padding" Value="14,9"/></Style><Style x:Key="Hint" TargetType="TextBlock"><Setter Property="FontSize" Value="12"/><Setter Property="Foreground" Value="#797384"/><Setter Property="TextWrapping" Value="Wrap"/></Style></Window.Resources>
  <Grid Margin="28"><Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
   <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
-   <TextBlock Text="Настройки" FontSize="26" FontWeight="SemiBold"/><TextBlock Text="Все действия с встречами — в меню «⋯» на маскоте." Style="{StaticResource Hint}" Margin="0,7,0,23"/>
-   <TextBlock Text="Распознавание речи" Margin="0,0,0,6"/><ComboBox x:Name="TranscriptionProvider"><ComboBoxItem Content="OpenAI API · whisper-1" Tag="openai"/><ComboBoxItem Content="На компьютере · Whisper base" Tag="local"/></ComboBox>
+   <TextBlock Text="Settings" FontSize="26" FontWeight="SemiBold"/><TextBlock Text="Everything for your meetings lives in the mascot's ⋯ menu." Style="{StaticResource Hint}" Margin="0,7,0,23"/>
+   <TextBlock Text="Transcription" Margin="0,0,0,6"/><ComboBox x:Name="TranscriptionProvider"><ComboBoxItem Content="OpenAI API · whisper-1" Tag="openai"/><ComboBoxItem Content="On this computer · Whisper base" Tag="local"/></ComboBox>
    <TextBlock x:Name="ProviderHint" Style="{StaticResource Hint}" Margin="0,7,0,12"/>
    <StackPanel x:Name="ApiKeyPanel">
-    <TextBlock Text="API-ключ OpenAI" Margin="0,0,0,6"/><PasswordBox x:Name="ApiKey" Padding="8" FontSize="14"/>
+    <TextBlock Text="OpenAI API key" Margin="0,0,0,6"/><PasswordBox x:Name="ApiKey" Padding="8" FontSize="14"/>
     <TextBlock x:Name="ApiKeyStatus" Style="{StaticResource Hint}" Margin="0,7,0,7"/>
-    <CheckBox x:Name="DeleteApiKey" Content="Удалить сохранённый ключ" FontSize="12" Margin="0,0,0,12"/>
+    <CheckBox x:Name="DeleteApiKey" Content="Delete saved API key" FontSize="12" Margin="0,0,0,12"/>
    </StackPanel>
-   <TextBlock Text="Микрофон" Margin="0,0,0,6"/><ComboBox x:Name="Microphone"/>
-   <TextBlock Text="Наушники или колонки для онлайн-звонков" Margin="0,15,0,6"/><ComboBox x:Name="OutputDevice"/>
-   <TextBlock Text="Выберите тот же выход, что и в Meet, Zoom или Teams." Style="{StaticResource Hint}" Margin="0,7,0,7"/><Button x:Name="RefreshDevices" Content="Обновить устройства" HorizontalAlignment="Left" FontSize="12" Padding="9,5"/>
-   <TextBlock Text="Язык распознавания" Margin="0,19,0,6"/><ComboBox x:Name="Language"/>
-   <CheckBox x:Name="Animate" Content="Оживлять маскота: движения и моргание" IsChecked="True" Margin="0,21,0,0"/><TextBlock Text="Без прогулок по экрану. Перемещение — перетаскиванием. Учитывается отключение анимации в Windows." Style="{StaticResource Hint}" Margin="20,7,0,18"/>
-   <TextBlock Text="Файлы встреч" FontWeight="SemiBold"/><TextBox x:Name="DataPath" IsReadOnly="True" BorderThickness="0" Background="Transparent" TextWrapping="Wrap" FontSize="11" Margin="0,6,0,8"/><Button x:Name="OpenFiles" Content="Открыть папку" HorizontalAlignment="Left" FontSize="12" Padding="9,5"/>
+   <TextBlock Text="Microphone" Margin="0,0,0,6"/><ComboBox x:Name="Microphone"/>
+   <TextBlock Text="Headphones or speakers for online calls" Margin="0,15,0,6"/><ComboBox x:Name="OutputDevice"/>
+   <TextBlock Text="Choose the output device used by Meet, Zoom or Teams." Style="{StaticResource Hint}" Margin="0,7,0,7"/><Button x:Name="RefreshDevices" Content="Refresh devices" HorizontalAlignment="Left" FontSize="12" Padding="9,5"/>
+   <TextBlock Text="Spoken language" Margin="0,19,0,6"/><ComboBox x:Name="Language"/>
+   <CheckBox x:Name="Animate" Content="Animate mascot: gentle motion and blinking" IsChecked="True" Margin="0,21,0,0"/><TextBlock Text="Drag to move your companion. It stays where you put it and respects Windows animation settings." Style="{StaticResource Hint}" Margin="20,7,0,18"/>
+   <TextBlock Text="Meeting files" FontWeight="SemiBold"/><TextBox x:Name="DataPath" IsReadOnly="True" BorderThickness="0" Background="Transparent" TextWrapping="Wrap" FontSize="11" Margin="0,6,0,8"/><Button x:Name="OpenFiles" Content="Open folder" HorizontalAlignment="Left" FontSize="12" Padding="9,5"/>
   </StackPanel></ScrollViewer>
-  <DockPanel Grid.Row="1" Margin="0,19,0,0"><Button x:Name="SaveSettings" Content="Готово" DockPanel.Dock="Right" HorizontalAlignment="Right"/><TextBlock x:Name="SettingsHint" Text="Изменения сохраняются по кнопке «Готово»." Style="{StaticResource Hint}" VerticalAlignment="Center" Margin="0,0,12,0"/></DockPanel>
+  <DockPanel Grid.Row="1" Margin="0,19,0,0"><Button x:Name="SaveSettings" Content="Done" DockPanel.Dock="Right" HorizontalAlignment="Right"/><TextBlock x:Name="SettingsHint" Text="Select Done to save your changes." Style="{StaticResource Hint}" VerticalAlignment="Center" Margin="0,0,12,0"/></DockPanel>
  </Grid>
 </Window>

@@ -19,7 +19,7 @@ namespace MeetingSprite {
         public static bool Exists { get { return File.Exists(PathName); } }
         public static void Save(string key,string path=null) {
             key=key.Trim();
-            if(key.Length<20||key.Any(c=>!((c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9')||c=='-'||c=='_')))throw new ArgumentException("Вставьте полный API-ключ без пробелов и посторонних символов.");
+            if(key.Length<20||key.Any(c=>!((c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9')||c=='-'||c=='_')))throw new ArgumentException("Paste your complete API key without spaces or extra characters.");
             byte[] clear=Store.Utf8.GetBytes(key);
             try { Store.Write(path??PathName,Convert.ToBase64String(ProtectedData.Protect(clear,null,DataProtectionScope.CurrentUser))); }
             finally { Array.Clear(clear,0,clear.Length); }
@@ -29,7 +29,7 @@ namespace MeetingSprite {
             try {
                 byte[] clear=ProtectedData.Unprotect(Convert.FromBase64String(File.ReadAllText(path)),null,DataProtectionScope.CurrentUser);
                 try{return Store.Utf8.GetString(clear);}finally{Array.Clear(clear,0,clear.Length);}
-            }catch {throw new IOException("Не удалось открыть сохранённый API-ключ. Введите его заново в «⋯ → Настройки».");}
+            }catch {throw new IOException("Could not read the saved API key. Enter it again in ⋯ → Settings.");}
         }
         public static void Delete(){if(Exists)File.Delete(PathName);}
     }
@@ -64,22 +64,22 @@ namespace MeetingSprite {
             return best;
         }
         public static async Task<TranscriptionResult> Transcribe(string audio,string language,string key,Action<string> progress,CancellationToken token,HttpClient client) {
-            if(String.IsNullOrWhiteSpace(key))throw new InvalidOperationException("Аудио сохранено. Добавьте API-ключ в «⋯ → Настройки», затем выберите встречу и нажмите «Повторить».");
+            if(String.IsNullOrWhiteSpace(key))throw new InvalidOperationException("Audio saved. Add your API key in ⋯ → Settings, then select the meeting and choose Retry.");
             token.ThrowIfCancellationRequested();
             var text=new StringBuilder();var srt=new StringBuilder();int index=0,part=0;
             using(var reader=new WaveFileReader(audio)) {
                 var f=reader.WaveFormat;
-                if(f.Encoding!=WaveFormatEncoding.Pcm||f.SampleRate!=16000||f.Channels!=1||f.BitsPerSample!=16)throw new IOException("Для API требуется WAV PCM16, 16 кГц, моно.");
+                if(f.Encoding!=WaveFormatEncoding.Pcm||f.SampleRate!=16000||f.Channels!=1||f.BitsPerSample!=16)throw new IOException("The API requires mono 16 kHz PCM16 WAV audio.");
                 long total=reader.Length,position=0;
-                if(total==0)throw new IOException("Аудиозапись пуста.");
+                if(total==0)throw new IOException("The audio recording is empty.");
                 while(position<total) {
                     token.ThrowIfCancellationRequested();
                     reader.Position=position;var data=new byte[(int)Math.Min(ChunkBytes,total-position)];
                     int read=0,n;while(read<data.Length&&(n=reader.Read(data,read,data.Length-read))>0)read+=n;
-                    if(read==0)throw new IOException("Не удалось прочитать аудиозапись.");
+                    if(read==0)throw new IOException("Could not read the audio recording.");
                     int count=position+read<total?CutAtQuietBoundary(data,read):read;
                     double offset=position/32000.0,duration=count/32000.0;
-                    progress("Whisper API · часть "+(++part)+" · "+Math.Floor(position*100.0/total).ToString(CultureInfo.InvariantCulture)+"%");
+                    progress("Whisper API · part "+(++part)+" · "+Math.Floor(position*100.0/total).ToString(CultureInfo.InvariantCulture)+"%");
                     byte[] wav;
                     using(var stream=new MemoryStream()) {
                         using(var writer=new WaveFileWriter(stream,f)){writer.Write(data,0,count);writer.Flush();wav=stream.ToArray();}
@@ -108,29 +108,29 @@ namespace MeetingSprite {
                             var result=new JavaScriptSerializer{MaxJsonLength=8*1024*1024}.Deserialize<WhisperResponse>(json);
                             if(result==null||result.text==null)throw new FormatException();
                             return result;
-                        } catch {throw new IOException("OpenAI вернул неполный ответ. Аудио сохранено; можно повторить обработку.");}
+                        } catch {throw new IOException("OpenAI returned an incomplete response. Audio saved; you can retry processing.");}
                     }
-                }catch(TaskCanceledException){if(token.IsCancellationRequested)throw;throw new IOException("OpenAI не ответил за 10 минут. Аудио сохранено; повторите обработку позже.");}
-                catch(HttpRequestException){throw new IOException("Нет соединения с OpenAI. Проверьте интернет и повторите обработку. Аудио сохранено.");}
+                }catch(TaskCanceledException){if(token.IsCancellationRequested)throw;throw new IOException("OpenAI did not respond within 10 minutes. Audio saved; try again later.");}
+                catch(HttpRequestException){throw new IOException("Could not connect to OpenAI. Check your internet and retry. Your audio is saved.");}
             }
         }
         static string ErrorMessage(int status) {
             switch(status) {
-                case 401:return "OpenAI не принял API-ключ. Проверьте его в настройках. Аудио сохранено.";
-                case 403:return "OpenAI запретил доступ. Проверьте доступность API и права проекта. Аудио сохранено.";
-                case 404:return "Модель whisper-1 недоступна этому проекту или отключена OpenAI. Аудио сохранено.";
-                case 429:return "Достигнут лимит OpenAI API. Проверьте баланс и лимиты проекта либо повторите позже. Аудио сохранено.";
-                default:return "Ошибка OpenAI API (HTTP "+status+"). Аудио сохранено; можно повторить обработку.";
+                case 401:return "OpenAI rejected the API key. Check it in Settings. Your audio is saved.";
+                case 403:return "OpenAI denied access. Check API availability and project permissions. Your audio is saved.";
+                case 404:return "whisper-1 is unavailable to this project or has been retired by OpenAI. Your audio is saved.";
+                case 429:return "OpenAI API limit reached. Check your balance and project limits, or try later. Your audio is saved.";
+                default:return "OpenAI API error (HTTP "+status+"). Audio saved; you can retry processing.";
             }
         }
         static void Append(WhisperResponse result,double offset,double duration,StringBuilder text,StringBuilder srt,ref int index) {
-            if(!String.IsNullOrWhiteSpace(result.text)&&(result.segments==null||result.segments.Count==0))throw new IOException("OpenAI не вернул таймкоды. Аудио сохранено; повторите обработку.");
+            if(!String.IsNullOrWhiteSpace(result.text)&&(result.segments==null||result.segments.Count==0))throw new IOException("OpenAI returned no timestamps. Audio saved; please retry processing.");
             text.AppendLine(result.text.Trim());double previous=0;
             foreach(var segment in result.segments??new List<WhisperSegment>()) {
                 if(String.IsNullOrWhiteSpace(segment.text))continue;
-                if(!segment.start.HasValue||!segment.end.HasValue||Double.IsNaN(segment.start.Value)||Double.IsNaN(segment.end.Value)||Double.IsInfinity(segment.start.Value)||Double.IsInfinity(segment.end.Value))throw new IOException("OpenAI вернул некорректные таймкоды.");
+                if(!segment.start.HasValue||!segment.end.HasValue||Double.IsNaN(segment.start.Value)||Double.IsNaN(segment.end.Value)||Double.IsInfinity(segment.start.Value)||Double.IsInfinity(segment.end.Value))throw new IOException("OpenAI returned invalid timestamps.");
                 double start=Math.Max(previous,Math.Min(duration,Math.Max(0,segment.start.Value))),end=Math.Min(duration,Math.Max(0,segment.end.Value));
-                if(end<=start)throw new IOException("OpenAI вернул некорректный интервал речи.");
+                if(end<=start)throw new IOException("OpenAI returned an invalid speech interval.");
                 srt.AppendLine((++index).ToString(CultureInfo.InvariantCulture));srt.AppendLine(Stamp(offset+start)+" --> "+Stamp(offset+end));srt.AppendLine(segment.text.Trim());srt.AppendLine();previous=end;
             }
         }

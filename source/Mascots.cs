@@ -6,8 +6,8 @@ using System.Windows.Media;
 
 namespace MeetingSprite {
     public class PixelMascot : FrameworkElement {
-        public static readonly string[] Names={"Мико","Луми","Пикс","Орби","Бип"};
-        public static readonly string[] Descriptions={"Робот с экраном","Тихое привидение","Любопытный лисёнок","Маленький космонавт","Кассетный друг"};
+        public static readonly string[] Names={"Miko","Lumi","Pix","Orbi","Beep"};
+        public static readonly string[] Descriptions={"The little screen robot","A gentle mint ghost","A curious little fox","Your tiny astronaut","A retro cassette pal"};
         public int Kind;
         public string State="idle";
         public float Level;
