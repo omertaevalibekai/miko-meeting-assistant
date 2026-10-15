@@ -1,3 +1,3 @@
-# Лицензии сторонних компонентов
+# Third-party notices
 
-Здесь находятся лицензии NAudio, whisper.cpp, модели Whisper и Silero VAD. Источники и версии перечислены в ../DEPENDENCIES.md.
+License texts for NAudio, whisper.cpp, OpenAI Whisper and Silero VAD are included here. See [DEPENDENCIES.md](../DEPENDENCIES.md) for versions, sources and checksums. These notices apply to their respective components.
