@@ -1,0 +1,1 @@
+PASS: only one widget action (ellipsis); anchored popup opens; five distinct selectable mascots; four workflow tabs stay in popup; only settings opens a normal window; mode switching; animated frames differ; disabled animation stays still. No microphone capture started.

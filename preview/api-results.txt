@@ -1,0 +1,6 @@
+PASS: Windows DPAPI encrypts the key for the current user; roundtrip succeeds; no plaintext key file.
+PASS: >25 MB recording split into valid WAV uploads below 25 MB; exact PCM SHA256 retained across boundaries; SRT uses cumulative timestamps.
+PASS: auto language omitted; mocked API success produces TXT, SRT and extractive summary without logging keys.
+PASS: 401, 429, offline, timeout, invalid response and failure of a later chunk retain audio/prior transcript; no automatic paid retries; error bodies not leaked.
+PASS: in-flight cancellation leaves saved audio; missing API key still creates playable mixed WAV and sends no request.
+No real API request, user recording or microphone was used. Live account authentication remains unverified.
