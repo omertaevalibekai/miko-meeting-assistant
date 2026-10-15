@@ -1,0 +1,32 @@
+# User recordings, settings and credentials
+Meetings/
+settings.json
+settings.json.tmp
+draft-notes.txt
+*.dpapi
+*.dpapi.tmp
+.env
+.env.*
+!.env.example
+*.wav
+*.mp3
+*.m4a
+*.log
+*-error.txt
+
+# Downloaded dependencies, models and build artifacts
+.deps/
+engine/
+models/
+*.exe
+*.dll
+*.pdb
+*.zip
+*.nupkg
+*.partial
+*.tmp
+bin/
+obj/
+work/
+outputs/
+.vs/
