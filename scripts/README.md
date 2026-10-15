@@ -1,3 +1,3 @@
-# Скрипты сборки
+# Dependency restoration
 
-restore-dependencies.ps1 загружает закреплённые версии NAudio и необязательного локального Whisper с проверкой SHA-256. Запускайте корневой build.ps1.
+`restore-dependencies.ps1` downloads pinned NAudio packages and optional local Whisper assets, verifies SHA-256 checksums and reuses cached downloads. Run the repository's [root build script](../BUILDING.md) to build Miko.
